@@ -12,7 +12,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName='Home'>
-        <Stack.Screen name='Home' component={Home} />
+        <Stack.Screen name='Home' component={Home} options={{title: 'Money Tracker', headerStyle: {backgroundColor: '#121212'}, headerTintColor: 'white'}} />
         <Stack.Screen name='Screen2' component={Screen2} />
       </Stack.Navigator>
     </NavigationContainer>
