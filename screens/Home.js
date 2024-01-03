@@ -1,12 +1,72 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Pressable, StyleSheet, Text, TextInput, TextInputComponent, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function Home({ navigation }) {
 
     const [money, setMoney] = useState(10000)
     const [amount, setAmount] = useState()
     const [details, setDetails] = useState()
+    const [data, setData] = useState({
+        amt: null,
+        dtl: null,
+        time: null,
+        ntr: null
+    })
+    const [getData, setGetData] = useState()
+
+    useEffect(() => {
+        async function fetchData() {
+            const tempData = await AsyncStorage.getItem('data')
+            setGetData(JSON.parse(tempData))
+            console.warn(getData)
+        }
+        fetchData()
+    }, [data])
+
+    const spentPress = async () => {
+        try {
+            const date = new Date()
+
+            if (amount != null) {
+                setMoney(parseInt(money) - parseInt(amount))
+            }
+            else {
+                console.warn('Null value passed')
+            }
+
+            setData({ amt: amount, dtl: details, time: date, ntr: 'out' })
+
+            await AsyncStorage.setItem('data', JSON.stringify(data))
+            await AsyncStorage.setItem('money', JSON.stringify(money))
+
+        } catch (e) {
+            console.log(e)
+        }
+
+    }
+
+    const gainedPress = async () => {
+        try {
+            const date = new Date()
+
+            if (amount != null) {
+                setMoney(parseInt(money) + parseInt(amount))
+            }
+            else {
+                console.warn('Null value passed')
+            }
+
+            setData({ amt: amount, dtl: details, time: date, ntr: 'in' })
+
+            await AsyncStorage.setItem('data', JSON.stringify(data))
+            await AsyncStorage.setItem('money', JSON.stringify(money))
+
+        } catch (e) {
+            console.log(e)
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -21,8 +81,19 @@ function Home({ navigation }) {
                 <TextInput multiline editable style={styles.input} numberOfLines={4} value={details} onChangeText={(value) => setDetails(value)} placeholder='Enter Details' placeholderTextColor={'white'} />
             </View>
             <View style={styles.optionDiv}>
-                <Pressable onPress={() => setMoney(parseInt(money) - parseInt(amount))}><Text style={styles.spent}>Spent</Text></Pressable>
-                <Pressable onPress={() => setMoney(parseInt(money) + parseInt(amount))}><Text style={styles.gained}>Gained</Text></Pressable>
+                <Pressable onPress={spentPress}><Text style={styles.spent}>Spent</Text></Pressable>
+                <Pressable onPress={gainedPress}><Text style={styles.gained}>Gained</Text></Pressable>
+            </View>
+            <View>
+                <View style={styles.thTextDiv}>
+                    <Text style={styles.thText}>Transaction History</Text>
+                </View>
+                <View>
+                    <Text style={{color: 'white'}}>{getData.amt}</Text>
+                    <Text style={{color: 'white'}}>{getData.dtl}</Text>
+                    <Text style={{color: 'white'}}>{getData.time}</Text>
+                    <Text style={{color: 'white'}}>{getData.ntr}</Text>
+                </View>
             </View>
         </View>
     )
@@ -81,6 +152,15 @@ const styles = StyleSheet.create({
         width: 85,
         padding: 20,
         borderRadius: 10
+    },
+    thTextDiv: {
+        display: 'flex',
+        paddingTop: 40,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    thText: {
+        color: 'white'
     }
 })
 
