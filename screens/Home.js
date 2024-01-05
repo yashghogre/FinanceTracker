@@ -1,35 +1,42 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Pressable, StyleSheet, Text, TextInput, TextInputComponent, View } from 'react-native'
+import { Button, Keyboard, Pressable, StyleSheet, Text, TextInput, TextInputComponent, TouchableWithoutFeedback, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function Home({ navigation }) {
 
     const [money, setMoney] = useState(10000)
-    const [amount, setAmount] = useState()
-    const [details, setDetails] = useState()
+    const [amount, setAmount] = useState('')
+    const [details, setDetails] = useState('')
     const [data, setData] = useState({
-        amt: null,
-        dtl: null,
-        time: null,
-        ntr: null
+        amt: '',
+        dtl: '',
+        time: '',
+        ntr: ''
     })
-    const [getData, setGetData] = useState()
+    const [getData, setGetData] = useState([])
 
     useEffect(() => {
         async function fetchData() {
             const tempData = await AsyncStorage.getItem('data')
-            setGetData(JSON.parse(tempData))
+            const dataArray = tempData ? JSON.parse(tempData) : [];
+            setGetData(dataArray)
             console.warn(getData)
+            // AsyncStorage.clear()
         }
         fetchData()
     }, [data])
+
+    const onBtnPress = () => {
+        setAmount('')
+        setDetails('')
+    }
 
     const spentPress = async () => {
         try {
             const date = new Date()
 
-            if (amount != null) {
+            if (amount) {
                 setMoney(parseInt(money) - parseInt(amount))
             }
             else {
@@ -38,12 +45,20 @@ function Home({ navigation }) {
 
             setData({ amt: amount, dtl: details, time: date, ntr: 'out' })
 
-            await AsyncStorage.setItem('data', JSON.stringify(data))
+            const existingData = await AsyncStorage.getItem('data')
+            const parseExistingData = JSON.parse(existingData)
+            const combinedData = [...parseExistingData, data]
+
+            await AsyncStorage.setItem('data', JSON.stringify(combinedData))
             await AsyncStorage.setItem('money', JSON.stringify(money))
+
+            // setAmount('')
+            // setDetails('')
 
         } catch (e) {
             console.log(e)
         }
+        onBtnPress()
 
     }
 
@@ -51,7 +66,7 @@ function Home({ navigation }) {
         try {
             const date = new Date()
 
-            if (amount != null) {
+            if (amount) {
                 setMoney(parseInt(money) + parseInt(amount))
             }
             else {
@@ -60,12 +75,20 @@ function Home({ navigation }) {
 
             setData({ amt: amount, dtl: details, time: date, ntr: 'in' })
 
-            await AsyncStorage.setItem('data', JSON.stringify(data))
+            const existingData = await AsyncStorage.getItem('data')
+            const parseExistingData = JSON.parse(existingData)
+            const combinedData = [...parseExistingData, data]
+
+            await AsyncStorage.setItem('data', JSON.stringify(combinedData))
             await AsyncStorage.setItem('money', JSON.stringify(money))
+
+            // setAmount('')
+            // setDetails('')
 
         } catch (e) {
             console.log(e)
         }
+        onBtnPress()
     }
 
     return (
@@ -88,12 +111,12 @@ function Home({ navigation }) {
                 <View style={styles.thTextDiv}>
                     <Text style={styles.thText}>Transaction History</Text>
                 </View>
-                <View>
+                {/* <View>
                     <Text style={{color: 'white'}}>{getData.amt}</Text>
                     <Text style={{color: 'white'}}>{getData.dtl}</Text>
                     <Text style={{color: 'white'}}>{getData.time}</Text>
                     <Text style={{color: 'white'}}>{getData.ntr}</Text>
-                </View>
+                </View> */}
             </View>
         </View>
     )
